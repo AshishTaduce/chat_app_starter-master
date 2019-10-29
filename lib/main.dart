@@ -11,7 +11,7 @@ void main() {
         '/': (context) => WelcomeScreen(),
         'login': (context) => LoginScreen(),
         'register': (context) => RegisterScreen(),
-        '/chat': (context) => ChatScreen(),
+        'chat': (context) => ChatScreen(),
       },
     ),
   );

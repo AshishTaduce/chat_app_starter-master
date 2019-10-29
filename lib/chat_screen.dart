@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
@@ -12,10 +11,32 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.white.withAlpha(0),
         title: Text('Chat'),
         actions: <Widget>[
           IconButton(
-            Icons.power_settings_new
+            icon: Icon(Icons.power_settings_new),
+            color: Colors.black,
+            onPressed: () {},
+          )
+        ],
+      ),
+      body: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: <Widget>[
+          Expanded(
+            flex: 8,
+            child: TextField(),
+          ),
+          FlatButton(
+            child: Text(
+              'Send',
+              style: TextStyle(
+                color: Colors.white,
+                backgroundColor: Colors.blue,
+              ),
+            ),
           )
         ],
       ),
