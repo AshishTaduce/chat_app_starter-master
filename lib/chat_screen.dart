@@ -12,12 +12,17 @@ class _ChatScreenState extends State<ChatScreen> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white.withAlpha(0),
-        title: Text('Chat'),
+        backgroundColor: Colors.green,
+        title: Text('Chat', style: TextStyle(color: Colors.white),),
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.power_settings_new),
-            color: Colors.black,
+            color: Colors.white,
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: Icon(Icons.file_download),
+            color: Colors.white,
             onPressed: () {},
           )
         ],
