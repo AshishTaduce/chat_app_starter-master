@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
@@ -14,12 +13,10 @@ class ChatScreen extends StatefulWidget {
 TextEditingController controller = TextEditingController();
 
 class _ChatScreenState extends State<ChatScreen> {
-  bool isMe = true;
 
   @override
   void initState() {
-    //getMessages();
-    getMessageStream();
+    getCurrentUser();
     controller.addListener(() {
       setState(() {});
     });
@@ -27,86 +24,49 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   String message = '⚬⚬⚬⚬⚬⚬⚬';
-  String user = '...';
-  List <Widget> widgetList = [];
+  String user = '';
+  List<Widget> widgetList = [];
   Random random = new Random();
-//  void getMessages() async {
-//    widgetList = [];
-//    QuerySnapshot collectionData =
-//        await Firestore.instance.collection('messages').getDocuments();
-//    for (DocumentSnapshot messages in collectionData.documents) {
-//      print(messages.data);
-//      widgetList.add(Bubble(
-//        message: '${messages.data['text']}',
-//        time: '${messages.data['sender']}',
-//        delivered: true,
-//        isMe: random.nextBool(),
-//      ),);
-//
-//    }
-//    setState(() {
-//
-//    });
-//  }
-
-  void getMessageStream () async{
+  String userEmail = '';
+  bool isMe;
+  Future<FirebaseUser> getCurrentUser() async {
+    FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
+    userEmail = currentUser.email;
+    return currentUser;
+  }
+  void getMessageStream() async {
     widgetList = [];
-    await for(var snapshot in Firestore.instance.collection('messages').snapshots()){
-      for (var message in snapshot.documents){
+    await for (var snapshot
+        in Firestore.instance.collection('messages').snapshots()) {
+      for (var message in snapshot.documents) {
         String text = message.data['text'];
         String sender = message.data['sender'];
-        print ('$text by $sender');
-        widgetList.add(Bubble(
-          message: '${message.data['text']}',
-          time: '${message.data['sender']}',
-          delivered: true,
-          isMe: isMe,
-
-        ),);
-        setState(() {
-
-        });
+        print('$text by $sender');
+        widgetList.add(
+          Bubble(
+            message: '${message.data['text']}',
+            sender: '${message.data['sender']}',
+            delivered: true,
+            isMe: isMe,
+          ),
+        );
+        setState(() {});
       }
     }
   }
-
-  Future messageStream () async{
-    widgetList = [];
-    await for(var snapshot in Firestore.instance.collection('messages').snapshots()){
-      for (var message in snapshot.documents){
-        String text = message.data['text'];
-        String sender = message.data['sender'];
-        print ('$text by $sender');
-        widgetList.add(Bubble(
-          message: '${message.data['text']}',
-          time: '${message.data['sender']}',
-          delivered: true,
-          isMe: isMe,
-
-        ),);
-        setState(() {
-
-        });
-      }
-    }
-  }
-
-
   Future lastMessages() async {
-    QuerySnapshot collectionData = await Firestore.instance.collection('messages').getDocuments();
-    print ('enters last message');
+    QuerySnapshot collectionData =
+        await Firestore.instance.collection('messages').getDocuments();
+    print('enters last message');
     setState(() {
       message = collectionData.documents.last['text'];
       user = collectionData.documents.last['sender'];
     });
   }
-
   @override
   Widget build(BuildContext context) {
-
     //bool isMe = true;
 
-       String chat;
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -127,9 +87,9 @@ class _ChatScreenState extends State<ChatScreen> {
             },
           ),
           IconButton(
-              icon: Icon(Icons.file_download),
-              color: Colors.white,
-              onPressed: null,
+            icon: Icon(Icons.file_download),
+            color: Colors.white,
+            onPressed: null,
           )
         ],
       ),
@@ -137,12 +97,26 @@ class _ChatScreenState extends State<ChatScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
           Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: widgetList,
-              ),
+            child: StreamBuilder<QuerySnapshot>(
+              stream: Firestore.instance.collection('messages').snapshots(),
+              builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+              return CircularProgressIndicator();
+            } else {
+              return ListView.builder(
+                itemBuilder: (context, int index) {
+                  return Bubble(
+                    message: snapshot.data.documents[index].data['text'],
+                    sender: snapshot.data.documents[index].data['sender'],
+                    delivered: true,
+                    isMe: userEmail == snapshot.data.documents.first['sender'],
+                  );
+                },
+                itemCount: snapshot.data.documents.length,
+                shrinkWrap: true,
+              );
+            }
+              },
             ),
           ),
           Row(
@@ -164,9 +138,6 @@ class _ChatScreenState extends State<ChatScreen> {
                     padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
                     child: TextField(
                       controller: controller,
-                      onChanged: (x) {
-                        chat = x;
-                      },
                     ),
                   ),
                 ),
@@ -180,7 +151,6 @@ class _ChatScreenState extends State<ChatScreen> {
                       color: Colors.blue,
                     ),
                     onPressed: controller.text.isEmpty ? null : sendMessage,
-
                   ),
                 ),
               )
@@ -189,25 +159,20 @@ class _ChatScreenState extends State<ChatScreen> {
         ],
       ),
     );
-
   }
-
   sendMessage() async {
     await Firestore.instance.collection('messages').add({
-      'sender': user,
+      'sender': userEmail,
       'text': controller.text,
-    });
+    },);
     controller.clear();
     getMessageStream();
   }
-
 }
-
-
 class Bubble extends StatelessWidget {
-  Bubble({this.message, this.time, this.delivered, this.isMe});
+  Bubble({this.message, this.sender, this.delivered, this.isMe});
 
-  final String message, time;
+  final String message, sender;
   final delivered, isMe;
 
   @override
@@ -237,7 +202,7 @@ class Bubble extends StatelessWidget {
     return Column(
       crossAxisAlignment: align,
       children: <Widget>[
-        Text(time,
+        Text(sender,
             style: TextStyle(
               color: Colors.black38,
               fontSize: 10.0,
@@ -282,5 +247,3 @@ class Bubble extends StatelessWidget {
     );
   }
 }
-
-
