@@ -94,7 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     color: Colors.blue,
                     onPressed: () async {
                       AuthResult result = await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
-                      Navigator.pushNamed(context, 'chat');
+                      Navigator.pushNamed(context, 'chat',);
                     },
                   ),
                 ],
