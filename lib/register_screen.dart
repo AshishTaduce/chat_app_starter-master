@@ -74,8 +74,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         icon: Icon(Icons.lock),
                         hintText: 'spacexRocks',
                         border: OutlineInputBorder()),
-                    onChanged: (newvalue){
-                      password = newvalue;
+                    onChanged: (newValue){
+                      password = newValue;
                     }
                   ),
                   SizedBox(
@@ -91,9 +91,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     color: Colors.purple,
                     onPressed: () {
-
-                      FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password);
-                      Navigator.pushNamed(context, 'login');
+                      try{
+                        FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password);
+                        Navigator.pushNamed(context, 'login');
+                      }
+                      catch(e){
+                        print (e);
+                        SnackBar snackBar = SnackBar(content: Text('$e'));
+                        Scaffold.of(context).showSnackBar(snackBar);
+                        setState(() {});
+                      }
                     },
                   ),
                 ],

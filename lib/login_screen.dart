@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -10,6 +11,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   String email;
   String password;
+  bool loginFailed = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -47,6 +49,12 @@ class _LoginScreenState extends State<LoginScreen> {
             SizedBox(
               height: 20,
             ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Visibility(
+                  visible: loginFailed,
+                  child: Text('Credentials invalid, plese check again.', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),)),
+            ),
             Container(
               alignment: Alignment.center,
               child: Column(
@@ -54,6 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   TextField(
+                    autofocus: true,
                     textAlign: TextAlign.center,
                     maxLines: 1,
                     keyboardType: TextInputType.emailAddress,
@@ -80,9 +89,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       password = x;
                     },
                   ),
+
+
                   SizedBox(
                     height: 20,
                   ),
+
                   RaisedButton(
                     padding: EdgeInsets.all(16),
                     shape: RoundedRectangleBorder(
@@ -93,8 +105,17 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     color: Colors.blue,
                     onPressed: () async {
-                      AuthResult result = await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
-                      Navigator.pushNamed(context, 'chat',);
+                      try{
+                        AuthResult result = await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
+                        Navigator.pushNamed(context, 'chatroom',);
+                        loginFailed = false;
+                      } catch (e){
+                        print (e);
+
+                        setState(() {
+                          loginFailed = true;
+                        });
+                      }
                     },
                   ),
                 ],
