@@ -104,6 +104,8 @@ class _ChatRoom_SelectionState extends State<ChatRoom_Selection> {
               onPressed: () async {
                 int next() => 1001 + random.nextInt(10000 - 1001);
                 int randomRoom = await next();
+                roomGenerated = randomRoom;
+                isVisible = true;
                 Firestore.instance
                     .collection('rooms')
                     .document(
@@ -112,10 +114,7 @@ class _ChatRoom_SelectionState extends State<ChatRoom_Selection> {
                     .setData({
                   'timeStamp': DateTime.now(),
                 });
-                isVisible = true;
-                roomGenerated = randomRoom;
-                sleep(Duration(seconds: 3));
-                isVisible = false;
+                sleep(Duration(milliseconds: 250));
                 },
             ),
             Visibility(
