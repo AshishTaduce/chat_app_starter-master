@@ -91,7 +91,18 @@ class _ChatScreenState extends State<ChatScreen> {
               stream: Firestore.instance.collection('rooms').document(widget.chatRoomID).collection('messages').snapshots(),
               builder: (context, snapshot) {
               if (!snapshot.hasData) {
-              return CircularProgressIndicator();
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Container(
+
+                    width: 150,
+                    height: 150,
+                    child: CircularProgressIndicator(),
+                  ),
+                ],
+              );
             } else {
               return ListView.builder(
                 itemBuilder: (context, int index) {
