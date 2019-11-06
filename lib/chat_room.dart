@@ -59,45 +59,54 @@ class _ChatRoom_SelectionState extends State<ChatRoom_Selection> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.white.withAlpha(0),
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.power_settings_new, color: Colors.black,),
+              color: Colors.white,
+              onPressed: () async {
+                FirebaseAuth.instance.signOut();
+                controller.dispose();
+                Navigator.pushReplacementNamed(context, '/');
+              },
+            ),
+          ],
+        ),
         backgroundColor: Colors.white,
         body: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Container(
-                  width: MediaQuery.of(context).size.width * 0.5,
-                  child: TextField(
-                    keyboardType: TextInputType.number,
-                    controller: roomIdController,
-                  ),
-                ),
-                Text('Join Room'),
-                RaisedButton(
-                  disabledColor: Colors.grey,
-                  child: Text('Join Room'),
-                  onPressed: () async {
-                    print('here now 1');
-                    String tempRoomId = roomIdController.text;
-                    roomIdController.clear();
-                    roomId = tempRoomId;
-                    print('trying to join room $roomId');
+            Container(
+              width: MediaQuery.of(context).size.width * 0.5,
+              child: TextField(
+                keyboardType: TextInputType.number,
+                controller: roomIdController,
+              ),
+            ),
+            RaisedButton(
+              disabledColor: Colors.grey,
+              child: Text('Join Room'),
+              onPressed: () async {
+                print('here now 1');
+                String tempRoomId = roomIdController.text;
+                roomIdController.clear();
+                roomId = tempRoomId;
+                print('trying to join room $roomId');
 
-                    await getRoomsList();
-                    if (roomsList.contains(roomId)) {
-                      Navigator.push(
-                        (context),
-                        MaterialPageRoute(
-                          builder: (context) => ChatScreen(
-                            chatRoomID: roomId,
-                          ),
-                        ),
-                      );
-                    }
-                  },
-                ),
-              ],
+                await getRoomsList();
+                if (roomsList.contains(roomId)) {
+                  Navigator.push(
+                    (context),
+                    MaterialPageRoute(
+                      builder: (context) => ChatScreen(
+                        chatRoomID: roomId,
+                      ),
+                    ),
+                  );
+                }
+              },
             ),
             RaisedButton(
               child: Text('Create New Room'),
@@ -109,12 +118,23 @@ class _ChatRoom_SelectionState extends State<ChatRoom_Selection> {
                 Firestore.instance
                     .collection('rooms')
                     .document(
-                      '$randomRoom}',
+                      '$randomRoom',
                     )
                     .setData({
                   'timeStamp': DateTime.now(),
                 });
                 sleep(Duration(milliseconds: 250));
+                await getRoomsList();
+                if (roomsList.contains(randomRoom)) {
+                  Navigator.push(
+                    (context),
+                    MaterialPageRoute(
+                      builder: (context) => ChatScreen(
+                        chatRoomID: randomRoom.toString(),
+                      ),
+                    ),
+                  );
+                }
                 },
             ),
             Visibility(

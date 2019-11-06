@@ -81,11 +81,6 @@ class _ChatScreenState extends State<ChatScreen> {
               Navigator.pushReplacementNamed(context, '/');
             },
           ),
-          IconButton(
-            icon: Icon(Icons.file_download),
-            color: Colors.white,
-            onPressed: null,
-          )
         ],
       ),
       body: Column(
