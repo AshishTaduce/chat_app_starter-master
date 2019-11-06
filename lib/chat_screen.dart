@@ -6,6 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
 class ChatScreen extends StatefulWidget {
+  final String chatRoomID;
+
+  ChatScreen({this.chatRoomID});
   @override
   _ChatScreenState createState() => _ChatScreenState();
 }
@@ -13,6 +16,7 @@ class ChatScreen extends StatefulWidget {
 TextEditingController controller = TextEditingController();
 
 class _ChatScreenState extends State<ChatScreen> {
+
 
   @override
   void initState() {
@@ -37,7 +41,7 @@ class _ChatScreenState extends State<ChatScreen> {
   void getMessageStream() async {
     widgetList = [];
     await for (var snapshot
-        in Firestore.instance.collection('messages').snapshots()) {
+        in Firestore.instance.collection('rooms').document(widget.chatRoomID).collection('messages').snapshots()) {
       for (var message in snapshot.documents) {
         String text = message.data['text'];
         String sender = message.data['sender'];
@@ -53,15 +57,6 @@ class _ChatScreenState extends State<ChatScreen> {
         setState(() {});
       }
     }
-  }
-  Future lastMessages() async {
-    QuerySnapshot collectionData =
-        await Firestore.instance.collection('messages').getDocuments();
-    print('enters last message');
-    setState(() {
-      message = collectionData.documents.last['text'];
-      user = collectionData.documents.last['sender'];
-    });
   }
   @override
   Widget build(BuildContext context) {
@@ -98,7 +93,7 @@ class _ChatScreenState extends State<ChatScreen> {
         children: <Widget>[
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-              stream: Firestore.instance.collection('messages').snapshots(),
+              stream: Firestore.instance.collection('rooms').document(widget.chatRoomID).collection('messages').snapshots(),
               builder: (context, snapshot) {
               if (!snapshot.hasData) {
               return CircularProgressIndicator();
@@ -161,7 +156,7 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
   sendMessage() async {
-    await Firestore.instance.collection('messages').add({
+    await Firestore.instance.collection('rooms').document(widget.chatRoomID).collection('messages').add({
       'sender': userEmail,
       'text': controller.text,
     },);
