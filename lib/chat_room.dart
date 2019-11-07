@@ -1,5 +1,4 @@
-import 'dart:io';
-
+import 'dart:async';
 import 'package:chat_app_starter/chat_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -44,18 +43,18 @@ class _ChatRoom_SelectionState extends State<ChatRoom_Selection> {
   }
 
   bool isVisible = false;
-  @override
+
   Future getRoomsList() async {
     roomsList = [];
     QuerySnapshot rooms =
         await Firestore.instance.collection('rooms').getDocuments();
-//TODO: list of rooms method 2
     for (DocumentSnapshot roomID in rooms.documents) {
       roomsList.add(roomID.documentID);
     }
     print(roomsList);
   }
 
+  @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
@@ -123,9 +122,7 @@ class _ChatRoom_SelectionState extends State<ChatRoom_Selection> {
                     .setData({
                   'timeStamp': DateTime.now(),
                 });
-                sleep(Duration(milliseconds: 250));
                 await getRoomsList();
-                if (roomsList.contains(randomRoom)) {
                   Navigator.push(
                     (context),
                     MaterialPageRoute(
@@ -134,12 +131,51 @@ class _ChatRoom_SelectionState extends State<ChatRoom_Selection> {
                       ),
                     ),
                   );
-                }
                 },
             ),
-            Visibility(
-                visible: isVisible,
-                child: Text('The room no generateed is $roomGenerated', textAlign: TextAlign.center, style: TextStyle(color: Colors.indigoAccent),)),
+            Expanded(
+              flex: 7,
+              child: StreamBuilder<QuerySnapshot>(
+                stream: Firestore.instance.collection('rooms').snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return Center(child: CircularProgressIndicator());
+                  } else {
+                    return ListView.builder(
+                      padding: EdgeInsets.only(top: 15),
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: EdgeInsets.fromLTRB(25, 2, 25, 0),
+                          child: RaisedButton(
+                              padding: EdgeInsets.symmetric(),
+                              onPressed: () async {
+                                Firestore.instance
+                                    .collection('rooms')
+                                    .document(
+                                    '${snapshot.data.documents[index].documentID}')
+                                    .collection('messages');
+                                Navigator.push(
+                                    (context),
+                                    MaterialPageRoute(
+                                        builder: (context) => ChatScreen(
+                                        )));
+                              },
+                              child: Text(
+                                snapshot.data.documents[index].documentID,
+                                style: TextStyle(
+                                    fontSize: 16),
+                              ),
+                          ),
+                        );
+                      },
+                      itemCount: snapshot.data.documents.length,
+                      shrinkWrap: true,
+                      scrollDirection: Axis.vertical,
+                    );
+                  }
+                },
+              ),
+            ),
           ],
         ),
       ),
